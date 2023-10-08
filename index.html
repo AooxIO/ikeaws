@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IKEA Employee Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            overflow-x: auto; /* Enable horizontal scrolling when needed */
+        }
+
+/* Style for the color legend */
+.color-legend {
+    background-color: #fff;
+    padding: 20px;
+    margin: 1px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 70px;
+    margin-bottom: 0px;
+}
+
+.legend-color {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.legend-text {
+    font-size: 40px;
+}
+
+
+        .schedule {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px;
+            overflow-x: auto; /* Enable horizontal scrolling when needed */
+        }
+
+        .addEmployeeButton{
+            font-size:50px;
+        }
+        .employee-row {
+            margin-bottom: 50px; /* Add margin between employee rows */
+            font-size:30px;
+            font-weight: bold;
+        }
+        .time-cells-container {
+            display: flex;
+            overflow-x: scroll; /* Enable horizontal scrolling when needed */
+        }
+        .time-cell {
+            border: 1px solid #ccc;
+            width: 80px; /* Adjust the width as needed */
+            height: 40px; /* Adjust the height as needed */
+            text-align: center;
+            padding: 6px;
+            cursor: pointer; /* Add cursor pointer for time cells */
+            flex-shrink: 0; /* Prevent time cells from shrinking */
+            font-size:28px;
+            font-weight: bold;
+        }
+        .time-cell.busy {
+            background-color: lightblue;
+
+        }
+        /* Style for the color picker dialog */
+        .color-picker-dialog {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            z-index: 2;
+        }
+        .color-picker-option {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        /* Increase the size of input fields and labels */
+        input[type="text"],
+        input[type="time"],
+        select {
+            font-size: 35px;
+            padding: 15px;
+            margin-bottom: 30px;
+            margin-left: 30px;
+
+        }
+        /* Increase the size of form labels */
+        label {
+            font-size: 30px;
+            font-weight: bold;
+        }
+        /* Style for the minimize button */
+        #minimizeButton {
+            display: block;
+            background-color: #fff;
+            color: #333;
+            border-color: black;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size:30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>IKEA Employee Schedule</h1>
+    </div>
+
+    <!-- Color legend div -->
+<div class="color-legend">
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: red;"></div>
+        <div class="legend-text">Arbetsledare</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: yellow;"></div>
+        <div class="legend-text">Logjour</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: blue;"></div>
+        <div class="legend-text">Plock</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: lightblue;"></div>
+        <div class="legend-text">Drive C&C</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: purple;"></div>
+        <div class="legend-text">Kontroll C&D</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: darkgreen;"></div>
+        <div class="legend-text">VU/GG</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: orange;"></div>
+        <div class="legend-text">Retur</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: hotpink;"></div>
+        <div class="legend-text">Recovery</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: lightpink;"></div>
+        <div class="legend-text">CX</div>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: black;"></div>
+        <div class="legend-text">Rast</div>
+    </div>
+</div>
+
+    <!-- Employee input form -->
+    <div class="schedule">
+        <!-- Button to minimize the form -->
+        <button id="minimizeButton">Minimize</button>
+        <!-- Employee input fields (initially hidden) -->
+        <form id="employeeForm" style="display: block;">
+            <h2><b>ADD EMPLOYEES</b></h2>
+            <label for="employeeName">Employee Name:</label>
+            <input type="text" id="employeeName" required style="width: 4%;">
+            <br>
+            <label for="employeeStartHours">Start Time:</label>
+            <input type="time" id="employeeStartHours" min="07:00" max="19:30" required step="900" style="width: 2.7%;">
+            <br>
+            <label for="employeeEndHours">End Time:</label>
+            <input type="time" id="employeeEndHours" min="07:15" max="19:45" required step="900" style="width: 2.7%;">
+            <br>
+            <!-- Color selection menu -->
+            <label for="employeeColor">Select Color:</label>
+            <select id="employeeColor" style="width: 4%;">
+                <option value="#FF0000">Röd</option>
+                <option value="#FFFF00">Gul</option>
+                <option value="#0000FF">Blå</option>
+                <option value="#ADD8E6">Ljus Blå</option>
+                <option value="#800080">Lila</option>
+                <option value="#006400">Mörk Grön</option>
+                <option value="#FFA500">Orange</option>
+                <option value="#FF69B4">Rosa</option>
+                <option value="#FFB6C1">Ljus Rosa</option>
+                <option value="#FFFFFF">Vit</option>
+                <option value="#000000">Svart</option>
+            </select>
+            <br>
+            <input type="submit" value="Add Employee" id="addEmployeeButton" style="padding: 15px 30px; font-size: 30px;">
+        </form>
+        <!-- Button click handler to toggle the form visibility -->
+        <script>
+            const minimizeButton = document.getElementById('minimizeButton');
+            const employeeForm = document.getElementById('employeeForm');
+
+            minimizeButton.addEventListener('click', () => {
+                if (employeeForm.style.display === 'none' || employeeForm.style.display === '') {
+                    employeeForm.style.display = 'block';
+                    minimizeButton.textContent = 'Minimize';
+                } else {
+                    employeeForm.style.display = 'none';
+                    minimizeButton.textContent = 'Expand';
+                }
+            });
+        </script>
+    </div>
+
+    <!-- Schedule table -->
+    <div class="schedule">
+        <h2><b>SCHEDULE</b></h2>
+        <!-- Display the schedule here -->
+        <div class="time-cells-container">
+            <table border="1">
+                <tr>
+                    
+                    <!-- Generate time cells dynamically using JavaScript -->
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Color picker dialog -->
+    <div class="color-picker-dialog" id="colorPickerDialog">
+        <div class="color-picker-option" style="background-color: #FF0000;"></div>
+        <div class="color-picker-option" style="background-color: #FFFF00;"></div>
+        <div class="color-picker-option" style="background-color: #0000FF;"></div>
+        <div class="color-picker-option" style="background-color: #ADD8E6;"></div>
+        <div class="color-picker-option" style="background-color: #800080;"></div>
+        <div class="color-picker-option" style="background-color: #006400;"></div>
+        <div class="color-picker-option" style="background-color: #FFA500;"></div>
+        <div class="color-picker-option" style="background-color: #FF69B4;"></div>
+        <div class="color-picker-option" style="background-color: #FFB6C1;"></div>
+        <div class="color-picker-option" style="background-color: #FFFFFF;"></div>
+        <div class="color-picker-option" style="background-color: #000000;"></div>
+    </div>
+
+    <script>
+        const scheduleTable = document.querySelector('.schedule table');
+        const addEmployeeButton = document.getElementById('addEmployeeButton');
+        const colorPickerDialog = document.getElementById('colorPickerDialog');
+        let selectedCell = null;
+
+        // Show color picker dialog when a time cell is clicked
+        scheduleTable.addEventListener('click', (e) => {
+            const targetCell = e.target;
+            if (targetCell.classList.contains('time-cell')) {
+                selectedCell = targetCell;
+                showColorPickerDialog();
+            }
+        });
+
+        // Add event listeners to color picker options
+const colorPickerOptions = document.querySelectorAll('.color-picker-option');
+colorPickerOptions.forEach((option) => {
+    option.addEventListener('click', (e) => {
+        const selectedColor = e.target.style.backgroundColor;
+
+        if (selectedCell) {
+            selectedCell.style.backgroundColor = selectedColor;
+
+            // Convert the background color to its hex representation
+            const hexColor = rgbToHex(window.getComputedStyle(e.target).backgroundColor);
+
+            // Check if color is dark and set text color accordingly
+            if (isColorDark(hexColor)) {
+                selectedCell.style.color = "white";
+            } else {
+                selectedCell.style.color = "black"; // Optional: set to default color if not dark
+            }
+        }
+
+        hideColorPickerDialog();
+    });
+});
+
+function rgbToHex(rgb) {
+    const result = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(rgb);
+    if (result) {
+        return "#" + ((1 << 24) + (parseInt(result[1]) << 16) + (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1).toUpperCase();
+    }
+    return rgb;  // Return original if it couldn't be converted
+}
+
+
+        function isColorDark(hex) {
+    // Convert hex to RGB first
+    let r;
+    let g;
+    let b;
+    if (hex.length == 4) {
+        // 3 digits
+        r = "0x" + hex[1] + hex[1];
+        g = "0x" + hex[2] + hex[2];
+        b = "0x" + hex[3] + hex[3];
+    } else if (hex.length == 7) {
+        // 6 digits
+        r = "0x" + hex[1] + hex[2];
+        g = "0x" + hex[3] + hex[4];
+        b = "0x" + hex[5] + hex[6];
+    }
+    // Then to HSL
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s;
+    const l = (max + min) / 2;
+
+    if (max == min) {
+        h = s = 0; // achromatic
+    } else {
+        const delta = max - min;
+        s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+        switch (max) {
+            case r:
+                h = (g - b) / delta + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / delta + 2;
+                break;
+            case b:
+                h = (r - g) / delta + 4;
+                break;
+        }
+        h /= 6;
+    }
+    return l <= 0.5; // Returns true if color is dark
+}
+
+
+        // Show the color picker dialog
+        function showColorPickerDialog() {
+            const cellBounds = selectedCell.getBoundingClientRect();
+            colorPickerDialog.style.left = `${cellBounds.left + window.scrollX}px`;
+            colorPickerDialog.style.top = `${cellBounds.top + window.scrollY}px`;
+            colorPickerDialog.style.display = 'block';
+        }
+
+        // Hide the color picker dialog
+        function hideColorPickerDialog() {
+            colorPickerDialog.style.display = 'none';
+        }
+
+        // Prevent form submission when clicking "Add Employee"
+        addEmployeeButton.addEventListener('click', (e) => {
+            e.preventDefault();
+        });
+
+        // Add employee when the form is submitted
+        addEmployeeButton.addEventListener('click', () => {
+            hideColorPickerDialog(); // Hide the color picker dialog when adding an employee
+
+            // Create a new row for the employee in the schedule table
+            const employeeName = document.getElementById('employeeName').value;
+            const newRow = scheduleTable.insertRow(-1);
+            newRow.innerHTML = `<td>${employeeName}</td>`;
+            newRow.classList.add('employee-row'); // Add a class for identifying employee rows
+
+            // Add time cells to the right of the name
+            const startTime = document.getElementById('employeeStartHours').value;
+            const endTime = document.getElementById('employeeEndHours').value;
+            const selectedColor = document.getElementById('employeeColor').value;
+
+            const startTimeParts = startTime.split(':');
+            const endTimeParts = endTime.split(':');
+
+            const startHour = parseInt(startTimeParts[0]);
+            const startMinute = parseInt(startTimeParts[1]);
+            const endHour = parseInt(endTimeParts[0]);
+            const endMinute = parseInt(endTimeParts[1]);
+
+            const startMinutes = startHour * 60 + startMinute;
+            const endMinutes = endHour * 60 + endMinute;
+
+            for (let i = 7 * 60; i <= 19.5 * 60; i += 15) {
+                const cell = newRow.insertCell(-1);
+                cell.classList.add('time-cell');
+
+                if (i >= startMinutes && i <= endMinutes) {
+    cell.classList.add('busy');
+    cell.style.backgroundColor = selectedColor;
+
+    // Check if color is dark and set text color accordingly
+    if (isColorDark(selectedColor)) {
+        cell.style.color = "white";
+    } else {
+        cell.style.color = "black"; // Optional: set to default color if not dark
+    }
+}
+                const hour = Math.floor(i / 60);
+                const minute = i % 60;
+                const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                cell.textContent = formattedTime;
+            }
+
+            // Add delete button to the row
+const deleteCell = newRow.insertCell(-1);
+const deleteButton = document.createElement('button');
+deleteButton.textContent = 'Delete';
+deleteButton.style.padding = '40px 20px'; // Adjust padding to make the button larger
+deleteButton.style.fontSize = '25px'; // Adjust font size to make the text larger
+deleteButton.addEventListener('click', () => {
+    scheduleTable.deleteRow(newRow.rowIndex);
+});
+deleteCell.appendChild(deleteButton);
+
+        });
+    </script>
+</body>
+</html>
